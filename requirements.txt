@@ -1,0 +1,12 @@
+python-dotenv==1.0.0
+#pyttsx3==2.90
+#requests==2.31.0
+#rhvoice-wrapper==0.7.1
+#rhvoice-wrapper-bin==0.4.0
+#rhvoice-wrapper-data==0.4.1
+#s3transfer==0.6.1
+#SCons==4.5.2
+#simpleaudio==1.0.4
+#six==1.16.0
+speechkit==2.2.2
+#urllib3==2.0.4
