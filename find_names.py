@@ -72,18 +72,6 @@ catalog_id = os.getenv("CATALOG_ID")
 
 session = create_session(oauth_token, catalog_id)
 
-# pcm_file_wrong = 'names_wrong.pcm'
-# wav_file_wrong = 'names_wrong.wav'
-# pcm_file_ok = 'names_ok.pcm'
-# wav_file_ok = 'names_ok.wav'
-
-
-# synthesize_audio(session, pcm_file_wrong, wrong_names_string, 'ermil', 'lpcm', '16000')
-# pcm_to_wav(pcm_file_wrong, wav_file_wrong)
-#
-# synthesize_audio(session, pcm_file_ok, corrected_names_string, 'ermil', 'lpcm', '16000')
-# pcm_to_wav(pcm_file_ok, wav_file_ok)
-
 synthesize_wav_audio(session, 'names_wrong.wav', wrong_names_string)
 synthesize_wav_audio(session, 'names_ok.wav', corrected_names_string)
 
