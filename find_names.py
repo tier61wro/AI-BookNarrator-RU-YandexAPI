@@ -2,14 +2,16 @@ import os
 import re
 from collections import Counter
 
-from book_narrator import (create_session, pcm_to_wav, replace_names,
-                           synthesize_audio)
+# from book_narrator import (create_session, pcm_to_wav, replace_names,
+#                            synthesize_audio)
+
+from utilities import create_session, pcm_to_wav, replace_names, synthesize_audio, find_non_russian_words_in_folder
+from settings import RUSSIAN_WORDS_REGEX, IGNORED_WORDS
 
 
 def find_top_names_in_folder(folder_path, top_n=200):
     # Регулярное выражение для поиска имен собственных (слов, начинающихся с заглавной буквы)
     name_min_len = 4
-    # name_pattern = re.compile(r'(?<![.?!]\s)\b[А-Я][а-я]{' + str(name_min_len - 1) + r',}\b')
     name_pattern = re.compile(r'(?<=[а-я]\s)\b[А-Я][а-я]{' + str(name_min_len - 1) + r',}\b')
 
     # Counter для подсчёта вхождений каждого имени собственного во всех файлах
@@ -38,6 +40,8 @@ def find_top_names_in_folder(folder_path, top_n=200):
 
     return result
 
+
+
 folder_path = '1_text_in'
 top_names = find_top_names_in_folder(folder_path)
 
@@ -49,13 +53,22 @@ for k in top_names.keys():
 
 print(name_list)
 
+# for b in blocks:
+#     print(len(b))
+#
+#     print(f'======{b}========')
+#     if non_russian_words := find_non_russian_words(b):
+#         print(f'alarm found non russian words {non_russian_words}')
+
+foreign_language_text = find_non_russian_words_in_folder(folder_path)
+
+if foreign_language_text:
+    print(f'ALARM: foreign_language_text {foreign_language_text}')
+
 possible_wrong_names = [
                         'Лукаш',
                         ]
 
-REPLACEMENTS = {
-    'Лукаш': 'Л+укаш',
-}
 
 wrong_names_string = ' sil<[500]>'.join(possible_wrong_names)
 print(wrong_names_string)
