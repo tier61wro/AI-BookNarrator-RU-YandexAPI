@@ -4,6 +4,11 @@ import wave
 from shutil import rmtree
 from typing import List, Optional
 
+from settings import IGNORED_WORDS, RUSSIAN_WORDS_REGEX
+from utilities import (create_session, extract_number, find_non_russian_words,
+                       join_wav_files, pcm_to_wav, replace_names,
+                       split_large_block, synthesize_audio, text_to_blocks)
+
 # import nltk
 # from dotenv import load_dotenv
 # from nltk.tokenize import sent_tokenize
@@ -13,11 +18,7 @@ from typing import List, Optional
 #
 # load_dotenv()
 
-from utilities import (create_session, pcm_to_wav, replace_names, synthesize_audio,
-                       split_large_block, text_to_blocks, find_non_russian_words,
-                       join_wav_files, extract_number)
 
-from settings import RUSSIAN_WORDS_REGEX, IGNORED_WORDS
 
 
 # Объявляем глобальные переменные буква

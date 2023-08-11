@@ -1,12 +1,14 @@
 import os
 import re
 import wave
-from speechkit import Session, SpeechSynthesis
+from typing import List, Optional
+
 import nltk
 from nltk.tokenize import sent_tokenize
-from settings import RUSSIAN_WORDS_REGEX, IGNORED_WORDS, CHANNELS, SAMPLE_WIDTH, FRAME_RATE
-from typing import List, Optional
-from settings import REPLACEMENTS
+from speechkit import Session, SpeechSynthesis
+
+from settings import (CHANNELS, FRAME_RATE, IGNORED_WORDS, REPLACEMENTS,
+                      RUSSIAN_WORDS_REGEX, SAMPLE_WIDTH)
 
 # ... [Все общие функции из book_narrator.py и find_names.py]
 
@@ -37,6 +39,20 @@ def pcm_to_wav(input_file: str, output_file: str):
         wav_file.setsampwidth(SAMPLE_WIDTH)
         wav_file.setframerate(FRAME_RATE)
         wav_file.writeframes(raw_audio_data)
+
+
+def synthesize_wav_audio(session, output_wav_file, text, voice='ermil', format='lpcm', sample_rate='16000'):
+    # Создание временного имени файла для PCM
+    temp_pcm_file = "temp_audio.pcm"
+
+    # Синтезирование аудио в формате PCM
+    synthesize_audio(session, temp_pcm_file, text, voice, format, sample_rate)
+
+    # Конвертация PCM в WAV
+    pcm_to_wav(temp_pcm_file, output_wav_file)
+
+    # Удаление временного PCM файла
+    os.remove(temp_pcm_file)
 
 
 def join_wav_files(output_file: str, *input_files: str):
@@ -99,7 +115,7 @@ def text_to_blocks(file_in):
         return blocks_final
 
 
-def find_non_russian_words_in_folder(folder_path: str) -> Optional[List[str]]:
+def find_foreign_words_in_folder(folder_path: str) -> Optional[List[str]]:
     non_russian_words = ['adc']
     for file_name in sorted(os.listdir(folder_path)):
         file_path = os.path.join(folder_path, file_name)
