@@ -1,16 +1,48 @@
 import os
 import re
 import wave
+from collections import Counter
 from typing import List, Optional
 
-import nltk
 from nltk.tokenize import sent_tokenize
 from speechkit import Session, SpeechSynthesis
 
-from settings import (CHANNELS, FRAME_RATE, IGNORED_WORDS, REPLACEMENTS,
+from settings import (CATALOG_ID, CHANNELS, FRAME_RATE, IGNORED_WORDS,
+                      NARRATION_COST_PER_THOUSAND, OAUTH_TOKEN, REPLACEMENTS,
                       RUSSIAN_WORDS_REGEX, SAMPLE_WIDTH)
 
-# ... [Все общие функции из book_narrator.py и find_names.py]
+
+def find_top_names_in_folder(folder_path, top_n=200):
+    # Регулярное выражение для поиска имен собственных (слов, начинающихся с заглавной буквы)
+    name_min_len = 4
+    name_pattern = re.compile(r'(?<=[а-я]\s)\b[А-Я][а-я]{' + str(name_min_len - 1) + r',}\b')
+
+    # Counter для подсчёта вхождений каждого имени собственного во всех файлах
+    name_counts = Counter()
+
+    # Перебор всех файлов в папке
+    for file_name in sorted(os.listdir(folder_path)):
+        file_path = os.path.join(folder_path, file_name)
+
+        # Чтение текста из файла
+        with open(file_path, 'r', encoding='utf-8') as file:
+            text = file.read()
+
+        # Поиск имен собственных в тексте с помощью регулярного выражения
+        names = name_pattern.findall(text)
+
+        # Обновление счетчика имен собственных для этого файла
+        name_counts.update(names)
+
+    # Получение top_n самых частых имен собственных
+    top_names = name_counts.most_common(top_n)
+
+    # Формирование результата в желаемом формате
+    # result = {name: count for name, count in top_names}
+    result = dict(top_names)
+
+    return result
+
 
 def create_session(oauth_token: str, catalog_id: str) -> Session:
     """Создание сессии"""
@@ -18,6 +50,10 @@ def create_session(oauth_token: str, catalog_id: str) -> Session:
     if session:
         print("Session created successfully")
     return session
+
+
+def create_default_session():
+    return create_session(OAUTH_TOKEN, CATALOG_ID)
 
 
 def synthesize_audio(session: Session, output_file: str, text: str, voice: str, format: str, sample_rate: str):
@@ -103,7 +139,7 @@ def text_to_blocks(file_in):
                     blocks_final.append(current_block)
                 current_block = bl
             else:
-                current_block = current_block + ' ' + bl
+                current_block = current_block + ' sil<[1000]>' + bl
 
         if current_block:
             if len(current_block) > 1000:
@@ -116,7 +152,7 @@ def text_to_blocks(file_in):
 
 
 def find_foreign_words_in_folder(folder_path: str) -> Optional[List[str]]:
-    non_russian_words = ['adc']
+    non_russian_words = []
     for file_name in sorted(os.listdir(folder_path)):
         file_path = os.path.join(folder_path, file_name)
         # print(f'{file_path}')
@@ -125,10 +161,14 @@ def find_foreign_words_in_folder(folder_path: str) -> Optional[List[str]]:
         with open(file_path, 'r', encoding='utf-8') as file:
             text = file.read()
 
-
         """Поиск слов, которые не состоят только из русских букв"""
         words = re.findall(r'\b\w+\b', text)
-        non_russian_words.extend([word for word in words if not re.match(RUSSIAN_WORDS_REGEX, word) and word not in IGNORED_WORDS])
+        filtered_words = [
+            word for word in words
+            if not re.match(RUSSIAN_WORDS_REGEX, word)
+            and word not in IGNORED_WORDS
+        ]
+        non_russian_words.extend(filtered_words)
 
     return non_russian_words if non_russian_words else None
 
@@ -144,3 +184,28 @@ def extract_number(filename: str) -> int:
     """Извлечение номера из имени файла"""
     match = re.search(r'\d+', filename)
     return int(match.group()) if match else 0  # Если номер не найден, возвращаем 0
+
+
+def calculate_book_narration_price(folder_path):
+    """
+    Оценка стоимости озвучивания всех файлов в указанной папке и подсчет общего количества символов.
+
+    :param folder_path: Путь к папке с файлами для озвучивания.
+    :return: Кортеж из общей оценочной стоимости озвучивания и общего количества символов.
+    """
+    total_symbols = 0
+
+    # Проходим по всем файлам в папке
+    for filename in os.listdir(folder_path):
+        filepath = os.path.join(folder_path, filename)
+
+        # Проверяем, что это файл, а не папка
+        if os.path.isfile(filepath):
+            with open(filepath, 'r', encoding='utf-8') as file:
+                content = file.read()
+                total_symbols += len(content)
+
+    # Вычисляем общую стоимость
+    total_cost = (total_symbols / 1000) * NARRATION_COST_PER_THOUSAND
+
+    return total_cost, total_symbols

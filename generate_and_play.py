@@ -1,14 +1,14 @@
 import os
 
 import simpleaudio as sa
-from speechkit import Session, SpeechSynthesis
+from speechkit import SpeechSynthesis
 
-from book_narrator import create_session
+from book_narrator import create_default_session
 
 oauth_token = os.getenv("OAUTH_TOKEN")
 catalog_id = os.getenv("CATALOG_ID")
 
-session = create_session(oauth_token, catalog_id)
+session = create_default_session()
 # synthesize_audio(session, pcm_file_name, blocks[i], 'ermil', 'lpcm', '16000')
 
 text_in = 'Пошла муха на базар и купила самовар'

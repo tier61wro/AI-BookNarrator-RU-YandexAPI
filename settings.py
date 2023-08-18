@@ -1,8 +1,16 @@
+import os
+
 import nltk
 from dotenv import load_dotenv
 
 # Загрузка переменных окружения
 load_dotenv()
+OAUTH_TOKEN = os.getenv("OAUTH_TOKEN")
+CATALOG_ID = os.getenv("CATALOG_ID")
+
+NARRATION_COST_PER_THOUSAND = 1.32
+NARRATION_PRICE_URL = 'https://cloud.yandex.ru/docs/speechkit/pricing#prices'
+
 
 # Глобальные константы
 RUSSIAN_WORDS_REGEX = "^[а-яА-ЯёЁ0-9]+$"
@@ -40,6 +48,3 @@ REPLACEMENTS = {
     'Яношек': '+Яношек',
     'Вомач': 'В+омач'
 }
-
-
-
